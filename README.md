@@ -66,7 +66,7 @@ The browser displays:
 - The associated beat text under each frame
 
 ---
-
+![Alt text](Evidence.png)
 ## Example Prompt Structure
 
 ```text
@@ -75,4 +75,4 @@ Scene: The hero enters an abandoned warehouse at night.
 Composition: clear subject, simple background.
 Camera: wide shot.
 Lighting: dramatic, high contrast.
-No text, no captions.
+No text, no captions.'''
