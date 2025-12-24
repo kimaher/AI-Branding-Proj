@@ -1,0 +1,118 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Storyboard Generator</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 20px; }
+      textarea { width: 100%; height: 140px; }
+      .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 10px 0; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 16px; }
+      .card { border: 1px solid #ddd; border-radius: 10px; padding: 10px; }
+      img { width: 100%; border-radius: 8px; display: block; }
+      .meta { font-size: 12px; color: #333; margin-top: 8px; white-space: pre-wrap; }
+      button { padding: 10px 14px; }
+      select, input { padding: 8px; }
+      .status { margin-top: 10px; color: #444; }
+    </style>
+  </head>
+  <body>
+    <h1>Prompt-to-Storyboard</h1>
+
+    <textarea id="story" placeholder="Paste a short story or scene description..."></textarea>
+
+    <div class="row">
+      <label>Style:
+        <select id="style">
+          <option value="cinematic">cinematic</option>
+          <option value="anime">anime</option>
+          <option value="noir">noir</option>
+          <option value="sketch">sketch</option>
+        </select>
+      </label>
+
+      <label>Frames:
+        <input id="maxBeats" type="number" min="1" max="10" value="6" />
+      </label>
+
+      <label>Size:
+        <select id="size">
+          <option value="1024x1024">1024x1024</option>
+          <option value="768x768">768x768</option>
+          <option value="512x512">512x512</option>
+        </select>
+      </label>
+
+      <button id="go">Generate storyboard</button>
+    </div>
+
+    <div class="status" id="status"></div>
+    <div class="grid" id="grid"></div>
+
+    <script>
+      const storyEl = document.getElementById("story");
+      const styleEl = document.getElementById("style");
+      const maxBeatsEl = document.getElementById("maxBeats");
+      const sizeEl = document.getElementById("size");
+      const statusEl = document.getElementById("status");
+      const gridEl = document.getElementById("grid");
+      const goBtn = document.getElementById("go");
+
+      function setStatus(msg) {
+        statusEl.textContent = msg;
+      }
+
+      function render(frames) {
+        gridEl.innerHTML = "";
+        for (const f of frames) {
+          const card = document.createElement("div");
+          card.className = "card";
+
+          const img = document.createElement("img");
+          img.src = f.dataUrl;
+          img.alt = `Frame ${f.index}`;
+
+          const meta = document.createElement("div");
+          meta.className = "meta";
+          meta.textContent = `Frame ${f.index}\n${f.beat}`;
+
+          card.appendChild(img);
+          card.appendChild(meta);
+          gridEl.appendChild(card);
+        }
+      }
+
+      goBtn.addEventListener("click", async () => {
+        const story = storyEl.value.trim();
+        if (!story) return setStatus("Enter some story text first.");
+
+        setStatus("Generating frames...");
+        goBtn.disabled = true;
+
+        try {
+          const resp = await fetch("/api/storyboard", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              story,
+              style: styleEl.value,
+              maxBeats: Number(maxBeatsEl.value || 6),
+              size: sizeEl.value
+            })
+          });
+
+          const data = await resp.json();
+          if (!resp.ok) throw new Error(data.error || "Request failed");
+
+          render(data.frames);
+          setStatus(`Done. Generated ${data.frames.length} frames.`);
+        } catch (e) {
+          setStatus(e.message);
+        } finally {
+          goBtn.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
