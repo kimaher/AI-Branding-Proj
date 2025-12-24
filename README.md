@@ -67,12 +67,3 @@ The browser displays:
 
 ---
 ![Alt text](Evidence.png)
-## Example Prompt Structure
-
-```text
-Storyboard frame, cinematic film still.
-Scene: The hero enters an abandoned warehouse at night.
-Composition: clear subject, simple background.
-Camera: wide shot.
-Lighting: dramatic, high contrast.
-No text, no captions.'''
